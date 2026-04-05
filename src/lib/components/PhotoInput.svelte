@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { settingsStore } from '$lib/stores/settings.svelte';
+	import { resizeImage } from '$lib/utils/imageResize';
+
 	interface Props {
 		value: string | null;
 		onPhotoChange: (photoDataUrl: string | null) => void;
@@ -18,9 +21,19 @@
 		const file = target.files?.[0];
 		if (file) {
 			const reader = new FileReader();
-			reader.onload = (e) => {
+			reader.onload = async (e) => {
 				const result = e.target?.result as string;
-				onPhotoChange(result);
+				try {
+					const resized = await resizeImage(
+						result,
+						settingsStore.getMaxDimension(),
+						settingsStore.getJpegQuality()
+					);
+					onPhotoChange(resized);
+				} catch (err) {
+					console.error('Error resizing image:', err);
+					onPhotoChange(result); // Fallback to original
+				}
 			};
 			reader.readAsDataURL(file);
 		}
@@ -42,15 +55,27 @@
 		}
 	}
 
-	function capturePhoto() {
+	async function capturePhoto() {
 		if (videoElement && canvasElement) {
 			const context = canvasElement.getContext('2d');
 			if (context) {
 				canvasElement.width = videoElement.videoWidth;
 				canvasElement.height = videoElement.videoHeight;
 				context.drawImage(videoElement, 0, 0);
-				const photoDataUrl = canvasElement.toDataURL('image/jpeg', 0.9);
-				onPhotoChange(photoDataUrl);
+				const photoDataUrl = canvasElement.toDataURL('image/jpeg', settingsStore.getJpegQuality());
+				
+				try {
+					const resized = await resizeImage(
+						photoDataUrl,
+						settingsStore.getMaxDimension(),
+						settingsStore.getJpegQuality()
+					);
+					onPhotoChange(resized);
+				} catch (err) {
+					console.error('Error resizing image:', err);
+					onPhotoChange(photoDataUrl); // Fallback to original
+				}
+				
 				closeCamera();
 			}
 		}

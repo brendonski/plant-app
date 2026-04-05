@@ -1,9 +1,29 @@
 <script lang="ts">
   import { browser } from "$app/environment";
+  import { settingsStore, type PhotoResolution } from '$lib/stores/settings.svelte';
 
   let exporting = $state(false);
   let importing = $state(false);
   let message = $state<{ type: 'success' | 'error', text: string } | null>(null);
+
+  let selectedResolution = $state<PhotoResolution>(settingsStore.photoResolution);
+
+  function handleResolutionChange(resolution: PhotoResolution) {
+    selectedResolution = resolution;
+    settingsStore.setPhotoResolution(resolution);
+    message = { type: 'success', text: 'Photo resolution updated' };
+  }
+
+  function getResolutionInfo(resolution: PhotoResolution): { size: string; description: string } {
+    switch (resolution) {
+      case 'high':
+        return { size: '2048px', description: 'Best quality, larger files (~500KB-1MB per photo)' };
+      case 'medium':
+        return { size: '1024px', description: 'Good quality, balanced size (~200-400KB per photo)' };
+      case 'low':
+        return { size: '512px', description: 'Lower quality, smallest files (~50-150KB per photo)' };
+    }
+  }
 
   async function exportData() {
     if (!browser) return;
@@ -124,6 +144,37 @@
       <button onclick={clearMessage} class="close-btn">✕</button>
     </div>
   {/if}
+
+  <div class="settings-section">
+    <h2>Photo Settings</h2>
+    <p class="description">
+      Choose the resolution for photos taken or uploaded. Higher resolution means better quality but larger file sizes.
+    </p>
+
+    <div class="resolution-options">
+      {#each ['high', 'medium', 'low'] as resolution}
+        {@const info = getResolutionInfo(resolution as PhotoResolution)}
+        <label class="resolution-option" class:selected={selectedResolution === resolution}>
+          <input
+            type="radio"
+            name="resolution"
+            value={resolution}
+            checked={selectedResolution === resolution}
+            onchange={() => handleResolutionChange(resolution as PhotoResolution)}
+          />
+          <div class="option-content">
+            <div class="option-header">
+              <strong class="option-title">
+                {resolution.charAt(0).toUpperCase() + resolution.slice(1)} Quality
+              </strong>
+              <span class="option-size">{info.size} max</span>
+            </div>
+            <small class="option-description">{info.description}</small>
+          </div>
+        </label>
+      {/each}
+    </div>
+  </div>
 
   <div class="settings-section">
     <h2>Data Backup & Restore</h2>
@@ -372,6 +423,74 @@
 
   .info-box li:last-child {
     margin-bottom: 0;
+  }
+
+  .resolution-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .resolution-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+  }
+
+  .resolution-option:hover {
+    border-color: #2196f3;
+    background: #f8f9fa;
+  }
+
+  .resolution-option.selected {
+    border-color: #2196f3;
+    background: #e3f2fd;
+  }
+
+  .resolution-option input[type="radio"] {
+    margin-top: 0.25rem;
+    cursor: pointer;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .option-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .option-title {
+    font-size: 1rem;
+    color: #333;
+  }
+
+  .option-size {
+    color: #666;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .option-description {
+    color: #666;
+    font-size: 0.85rem;
+    line-height: 1.4;
   }
 
   /* Mobile responsive */

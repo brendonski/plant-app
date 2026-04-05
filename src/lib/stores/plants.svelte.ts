@@ -1,9 +1,15 @@
 import type { Plant } from "$lib/types";
 import { plantsCollection } from "$lib/db/collections";
 
+// Helper to clone data and remove reactivity proxies
+function clonePlain<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
+}
+
 class PlantsStore {
   get plants(): Plant[] {
-    return plantsCollection.find().fetch();
+    const items = plantsCollection.find().fetch();
+    return clonePlain(items);
   }
 
   add(plant: Omit<Plant, "id">) {
@@ -23,7 +29,8 @@ class PlantsStore {
   }
 
   getById(id: string): Plant | undefined {
-    return plantsCollection.findOne({ id });
+    const item = plantsCollection.findOne({ id });
+    return item ? clonePlain(item) : undefined;
   }
 
   getByLocation(
@@ -31,15 +38,17 @@ class PlantsStore {
     row: number,
     position: number,
   ): Plant | undefined {
-    return plantsCollection.findOne({
+    const item = plantsCollection.findOne({
       "location.bedId": bedId,
       "location.row": row,
       "location.position": position,
     });
+    return item ? clonePlain(item) : undefined;
   }
 
   getByBed(bedId: string): Plant[] {
-    return plantsCollection.find({ "location.bedId": bedId }).fetch();
+    const items = plantsCollection.find({ "location.bedId": bedId }).fetch();
+    return clonePlain(items);
   }
 
   async migrateFromLocalStorage() {

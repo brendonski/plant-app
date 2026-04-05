@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { settingsStore } from '$lib/stores/settings.svelte';
+	import { resizeImage } from '$lib/utils/imageResize';
+
 	interface Props {
 		photos: string[];
 		onPhotosChange: (photos: string[]) => void;
@@ -23,9 +26,19 @@
 				const file = files[i];
 				const reader = new FileReader();
 				await new Promise<void>((resolve) => {
-					reader.onload = (e) => {
+					reader.onload = async (e) => {
 						const result = e.target?.result as string;
-						newPhotos.push(result);
+						try {
+							const resized = await resizeImage(
+								result,
+								settingsStore.getMaxDimension(),
+								settingsStore.getJpegQuality()
+							);
+							newPhotos.push(resized);
+						} catch (err) {
+							console.error('Error resizing image:', err);
+							newPhotos.push(result); // Fallback to original
+						}
 						resolve();
 					};
 					reader.readAsDataURL(file);
@@ -55,15 +68,27 @@
 		}
 	}
 
-	function capturePhoto() {
+	async function capturePhoto() {
 		if (videoElement && canvasElement) {
 			const context = canvasElement.getContext('2d');
 			if (context) {
 				canvasElement.width = videoElement.videoWidth;
 				canvasElement.height = videoElement.videoHeight;
 				context.drawImage(videoElement, 0, 0);
-				const photoDataUrl = canvasElement.toDataURL('image/jpeg', 0.9);
-				onPhotosChange([...photos, photoDataUrl]);
+				const photoDataUrl = canvasElement.toDataURL('image/jpeg', settingsStore.getJpegQuality());
+				
+				try {
+					const resized = await resizeImage(
+						photoDataUrl,
+						settingsStore.getMaxDimension(),
+						settingsStore.getJpegQuality()
+					);
+					onPhotosChange([...photos, resized]);
+				} catch (err) {
+					console.error('Error resizing image:', err);
+					onPhotosChange([...photos, photoDataUrl]); // Fallback to original
+				}
+				
 				closeCamera();
 			}
 		}

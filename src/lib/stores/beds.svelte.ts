@@ -1,9 +1,15 @@
 import type { Bed, IdbBed } from "$lib/types";
 import { bedsCollection } from "$lib/db/collections";
 
+// Helper to clone data and remove reactivity proxies
+function clonePlain<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
+}
+
 class BedsStore {
   get beds(): Bed[] {
-    return bedsCollection.find().fetch();
+    const items = bedsCollection.find().fetch();
+    return clonePlain(items);
   }
 
   add(bed: Omit<Bed, "id">) {
@@ -23,7 +29,8 @@ class BedsStore {
   }
 
   getById(id: string): Bed | undefined {
-    return bedsCollection.findOne({ id });
+    const item = bedsCollection.findOne({ id });
+    return item ? clonePlain(item) : undefined;
   }
 
   async migrateFromLocalStorage() {

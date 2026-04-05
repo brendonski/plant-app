@@ -3,6 +3,7 @@
 	import { bedsStore } from '$lib/stores/beds.svelte';
 	import AddPlantForm from '$lib/components/AddPlantForm.svelte';
 	import EditPlantForm from '$lib/components/EditPlantForm.svelte';
+	import PhotoCarousel from '$lib/components/PhotoCarousel.svelte';
 
 	let showAddForm = $state(false);
 	let editingPlantId = $state<string | null>(null);
@@ -65,14 +66,7 @@
 				<div class="plant-card">
 					{#if plant.photos.length > 0}
 						<div class="plant-photos">
-							<div class="main-photo">
-								<img src={plant.photos[0]} alt={plant.name} />
-							</div>
-							{#if plant.photos.length > 1}
-								<div class="photo-count">
-									📷 {plant.photos.length}
-								</div>
-							{/if}
+							<PhotoCarousel photos={plant.photos} plantName={plant.name} />
 						</div>
 					{:else}
 						<div class="plant-photo-placeholder">
@@ -225,29 +219,6 @@
 		height: 200px;
 		overflow: hidden;
 		background: #f5f5f5;
-	}
-
-	.main-photo {
-		width: 100%;
-		height: 100%;
-	}
-
-	.main-photo img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.photo-count {
-		position: absolute;
-		bottom: 0.5rem;
-		right: 0.5rem;
-		background: rgba(0, 0, 0, 0.7);
-		color: white;
-		padding: 0.25rem 0.75rem;
-		border-radius: 12px;
-		font-size: 0.85rem;
-		font-weight: 500;
 	}
 
 	.plant-photo-placeholder {
