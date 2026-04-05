@@ -135,6 +135,78 @@
     }
   }
 
+  async function exportData() {
+    try {
+      const root = await navigator.storage.getDirectory();
+      const exportData: Record<string, string> = {};
+
+      // @ts-ignore - File System Access API types may not be available
+      for await (const entry of root.values()) {
+        if (entry.kind === "file") {
+          const fileHandle = entry as FileSystemFileHandle;
+          const file = await fileHandle.getFile();
+          const text = await file.text();
+          exportData[entry.name] = text;
+        }
+      }
+
+      // Create a downloadable JSON file
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `plant-app-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      error = err instanceof Error ? err.message : String(err);
+      console.error("Error exporting data:", err);
+    }
+  }
+
+  async function importData() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json";
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        if (!confirm(`This will import ${Object.keys(data).length} file(s). Continue?`)) {
+          return;
+        }
+
+        const root = await navigator.storage.getDirectory();
+        
+        for (const [fileName, content] of Object.entries(data)) {
+          if (typeof content === "string") {
+            const fileHandle = await root.getFileHandle(fileName, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(content);
+            await writable.close();
+          }
+        }
+
+        await loadOPFSContents();
+        alert(`Successfully imported ${Object.keys(data).length} file(s)!`);
+      } catch (err) {
+        error = err instanceof Error ? err.message : String(err);
+        console.error("Error importing data:", err);
+        alert("Error importing data. Please check the file format.");
+      }
+    };
+
+    input.click();
+  }
+
   onMount(() => {
     loadOPFSContents();
   });
@@ -146,6 +218,12 @@
     <div class="actions">
       <button onclick={loadOPFSContents} disabled={loading}>
         {loading ? "Loading..." : "Refresh"}
+      </button>
+      <button onclick={exportData} disabled={loading || files.length === 0} class="export">
+        📥 Export Data
+      </button>
+      <button onclick={importData} disabled={loading} class="import">
+        📤 Import Data
       </button>
       <button onclick={clearAllOPFS} disabled={loading || files.length === 0} class="danger">
         Clear All
@@ -254,6 +332,26 @@
   button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  button.export {
+    background: #e8f5e9;
+    border-color: #c8e6c9;
+    color: #2e7d32;
+  }
+
+  button.export:hover:not(:disabled) {
+    background: #c8e6c9;
+  }
+
+  button.import {
+    background: #e3f2fd;
+    border-color: #bbdefb;
+    color: #1565c0;
+  }
+
+  button.import:hover:not(:disabled) {
+    background: #bbdefb;
   }
 
   button.danger {

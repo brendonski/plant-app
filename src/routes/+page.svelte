@@ -12,6 +12,11 @@
 			<h2>🌸 Plant Records</h2>
 			<p>Record plant details and photos</p>
 		</a>
+
+		<a href="/settings" class="card">
+			<h2>⚙️ Settings</h2>
+			<p>Backup, restore, and configure</p>
+		</a>
 	</div>
 </div>
 
