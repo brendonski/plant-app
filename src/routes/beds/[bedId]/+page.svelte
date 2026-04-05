@@ -3,10 +3,25 @@
     import { bedsStore } from "$lib/stores/beds.svelte";
     import { plantsStore } from "$lib/stores/plants.svelte";
     import { goto } from "$app/navigation";
+    import { browser } from "$app/environment";
 
     const bedId = $derived($page.params.bedId ?? "");
     const bed = $derived(bedsStore.getById(bedId));
     const plants = $derived(plantsStore.getByBed(bedId));
+
+    // Load saved sort preference from localStorage
+    const SORT_PREFERENCE_KEY = "bed-grid-sort-preference";
+    const savedSort =
+        browser &&
+        (localStorage.getItem(SORT_PREFERENCE_KEY) as "asc" | "desc" | null);
+    let sortDirection = $state<"asc" | "desc">(savedSort || "asc");
+
+    // Save sort preference whenever it changes
+    $effect(() => {
+        if (browser) {
+            localStorage.setItem(SORT_PREFERENCE_KEY, sortDirection);
+        }
+    });
 
     function getRowLabel(row: number): string {
         return String.fromCharCode(65 + row);
@@ -26,6 +41,13 @@
             goto(`/plants?add=true&bed=${bedId}&row=${row}&position=${position}&returnToBed=${bedId}`);
         }
     }
+
+    // Get positions array sorted based on sortDirection
+    function getSortedPositions(positionsPerRow: number): number[] {
+        const positions = Array.from({ length: positionsPerRow }, (_, i) => i);
+        return sortDirection === "asc" ? positions : positions.reverse();
+    }
+
 </script>
 
 {#if !bed}
@@ -43,8 +65,17 @@
                 <a href="/beds" class="back-link">← Back to Beds</a>
                 <h1>{bed.name}</h1>
             </div>
-            <div class="bed-info">
-                <span>{bed.rows} rows × {bed.positionsPerRow} positions</span>
+            <div class="header-actions">
+                <div class="bed-info">
+                    <span>{bed.rows} rows × {bed.positionsPerRow} positions</span>
+                </div>
+                <div class="sort-control">
+                    <label for="sort-select">Sort:</label>
+                    <select id="sort-select" bind:value={sortDirection}>
+                        <option value="asc">Position 1 → {bed.positionsPerRow}</option>
+                        <option value="desc">Position {bed.positionsPerRow} → 1</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -54,7 +85,7 @@
                     <div class="grid-column">
                         <div class="row-label">{getRowLabel(rowIndex)}</div>
                         <div class="positions">
-                            {#each Array(bed.positionsPerRow) as _, posIndex}
+                            {#each getSortedPositions(bed.positionsPerRow) as posIndex}
                                 {@const plant = getPlantAtPosition(rowIndex, posIndex)}
                                 <button
                                     class="position-cell"
@@ -116,7 +147,7 @@
     .header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         margin-bottom: 2rem;
         gap: 1rem;
         flex-wrap: wrap;
@@ -126,6 +157,13 @@
         display: flex;
         align-items: center;
         gap: 1.5rem;
+    }
+
+    .header-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.75rem;
     }
 
     .back-link {
@@ -151,7 +189,42 @@
 
     .bed-info {
         color: #666;
-        font-size: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .sort-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f8f9fa;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+    }
+
+    .sort-control label {
+        font-weight: 500;
+        color: #333;
+        font-size: 0.9rem;
+    }
+
+    .sort-control select {
+        padding: 0.4rem 0.6rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+
+    .sort-control select:hover {
+        border-color: #007bff;
+    }
+
+    .sort-control select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
     }
 
     .error-state {
