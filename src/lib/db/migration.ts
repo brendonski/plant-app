@@ -44,6 +44,7 @@ export async function migrateFromLocalStorage() {
             row: number;
             position: number;
           };
+          notes?: string;
         }>;
         console.log(`Migrating ${oldPlants.length} plants...`);
         oldPlants.forEach((oldPlant) => {
@@ -60,6 +61,7 @@ export async function migrateFromLocalStorage() {
               dominantColour: oldPlant.dominantColour,
               photos,
               location: oldPlant.location,
+              notes: oldPlant.notes,
             };
             plantsCollection.insert(newPlant);
           }

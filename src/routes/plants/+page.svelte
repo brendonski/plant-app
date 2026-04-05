@@ -96,6 +96,12 @@
 								<strong>Location:</strong>
 								{getLocationString(plant.location.bedId, plant.location.row, plant.location.position)}
 							</p>
+							{#if plant.notes}
+								<div class="plant-notes">
+									<strong>Notes:</strong>
+									<p class="notes-text">{plant.notes}</p>
+								</div>
+							{/if}
 						</div>
 
 						<div class="plant-actions">
@@ -280,6 +286,23 @@
 	.plant-details p {
 		margin: 0.75rem 0;
 		color: #666;
+	}
+
+	.plant-notes {
+		margin-top: 1rem;
+		padding-top: 1rem;
+		border-top: 1px solid #eee;
+	}
+
+	.plant-notes strong {
+		color: #333;
+	}
+
+	.notes-text {
+		margin: 0.5rem 0 0 0;
+		color: #555;
+		white-space: pre-wrap;
+		line-height: 1.5;
 	}
 
 	.colour-display {

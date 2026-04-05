@@ -17,6 +17,7 @@ export interface Plant {
   dominantColour: string;
   photos: string[];
   location: PlantLocation;
+  notes?: string;
 }
 
 export interface IdbBed {
@@ -39,4 +40,5 @@ export interface IdbPlant {
   secondaryColour?: string;
   photos: string[];
   location: IdbPlantLocation;
+  notes?: string;
 }
