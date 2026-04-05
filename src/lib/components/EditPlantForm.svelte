@@ -13,6 +13,8 @@
 
     let name = $state("");
     let dominantColour = $state("#ff69b4");
+    let secondaryColour = $state("");
+    let hasSecondaryColour = $state(false);
     let photos = $state<string[]>([]);
     let notes = $state("");
     let selectedBedId = $state<string>("");
@@ -22,6 +24,8 @@
     $effect(() => {
         name = plant.name;
         dominantColour = plant.dominantColour;
+        secondaryColour = plant.secondaryColour || "";
+        hasSecondaryColour = !!plant.secondaryColour;
         photos = plant.photos;
         notes = plant.notes || "";
         selectedBedId = plant.location.bedId;
@@ -86,6 +90,7 @@
         plantsStore.update(plant.id, {
             name: name.trim(),
             dominantColour,
+            secondaryColour: hasSecondaryColour && secondaryColour ? secondaryColour : undefined,
             photos,
             notes: notes.trim() || undefined,
             location: {
@@ -122,7 +127,7 @@
 
     <div class="form-group">
         <label for="colour">
-            Colour <span class="required">*</span>
+            Dominant Colour <span class="required">*</span>
         </label>
         <div class="colour-input-group">
             <input type="color" id="colour" bind:value={dominantColour} />
@@ -133,7 +138,32 @@
                 class="colour-text-input"
             />
         </div>
-        <small>Select or enter a colour (hex format)</small>
+        <small>Select or enter the primary colour (hex format)</small>
+    </div>
+
+    <div class="form-group">
+        {#if !hasSecondaryColour}
+            <button type="button" class="btn-add-secondary" onclick={() => { hasSecondaryColour = true; secondaryColour = '#ffffff'; }}>
+                + Add Secondary Colour
+            </button>
+        {:else}
+            <label for="secondary-colour">
+                Secondary Colour
+            </label>
+            <div class="colour-input-group">
+                <input type="color" id="secondary-colour" bind:value={secondaryColour} />
+                <input
+                    type="text"
+                    bind:value={secondaryColour}
+                    placeholder="#ffffff"
+                    class="colour-text-input"
+                />
+            </div>
+            <small>Select or enter a secondary colour (hex format)</small>
+            <button type="button" class="btn-remove-secondary" onclick={() => { hasSecondaryColour = false; secondaryColour = ''; }}>
+                Remove Secondary Colour
+            </button>
+        {/if}
     </div>
 
     <div class="form-group">
@@ -281,6 +311,39 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1rem;
+    }
+
+    .btn-add-secondary {
+        padding: 0.5rem 1rem;
+        border: 1px dashed #007bff;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        background: white;
+        color: #007bff;
+        transition: all 0.2s;
+    }
+
+    .btn-add-secondary:hover {
+        background: #f0f8ff;
+        border-style: solid;
+    }
+
+    .btn-remove-secondary {
+        padding: 0.5rem 1rem;
+        border: 1px solid #dc3545;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        background: white;
+        color: #dc3545;
+        transition: all 0.2s;
+        margin-top: 0.5rem;
+    }
+
+    .btn-remove-secondary:hover {
+        background: #dc3545;
+        color: white;
     }
 
     small {

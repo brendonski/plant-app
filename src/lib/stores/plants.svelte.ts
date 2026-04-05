@@ -23,9 +23,35 @@ class PlantsStore {
   }
 
   update(id: string, updates: Partial<Omit<Plant, "id">>) {
-    // Ensure updates are fully serializable
-    const serialized = JSON.parse(JSON.stringify(updates));
-    plantsCollection.updateOne({ id }, { $set: serialized });
+    // Separate fields to unset (undefined values) before serialization
+    const fieldsToUnset: Record<string, true> = {};
+    const fieldsToSet: any = {};
+    
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === undefined) {
+        fieldsToUnset[key] = true;
+      } else {
+        fieldsToSet[key] = value;
+      }
+    }
+    
+    // Serialize the fields to set
+    const serialized = Object.keys(fieldsToSet).length > 0 
+      ? JSON.parse(JSON.stringify(fieldsToSet)) 
+      : {};
+    
+    // Build update query
+    const updateQuery: any = {};
+    if (Object.keys(serialized).length > 0) {
+      updateQuery.$set = serialized;
+    }
+    if (Object.keys(fieldsToUnset).length > 0) {
+      updateQuery.$unset = fieldsToUnset;
+    }
+    
+    if (Object.keys(updateQuery).length > 0) {
+      plantsCollection.updateOne({ id }, updateQuery);
+    }
   }
 
   remove(id: string) {

@@ -15,6 +15,7 @@ export interface Plant {
   id: string;
   name: string;
   dominantColour: string;
+  secondaryColour?: string;
   photos: string[];
   location: PlantLocation;
   notes?: string;

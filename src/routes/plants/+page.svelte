@@ -146,9 +146,16 @@
 								<strong>Colour:</strong>
 								<span class="colour-display">
 									<span class="colour-swatch" style="background-color: {plant.dominantColour}"></span>
-									{plant.dominantColour}
 								</span>
 							</p>
+							{#if plant.secondaryColour}
+								<p>
+									<strong>Secondary Colour:</strong>
+									<span class="colour-display">
+										<span class="colour-swatch" style="background-color: {plant.secondaryColour}"></span>
+									</span>
+								</p>
+							{/if}
 							<p>
 								<strong>Location:</strong>
 								{getLocationString(plant.location.bedId, plant.location.row, plant.location.position)}
