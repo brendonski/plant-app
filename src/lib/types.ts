@@ -37,6 +37,6 @@ export interface IdbPlant {
   name: string;
   dominantColour: string;
   secondaryColour?: string;
-  photos: Blob[];
+  photos: string[];
   location: IdbPlantLocation;
 }
