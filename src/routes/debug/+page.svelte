@@ -55,6 +55,23 @@
     }
   }
 
+  function truncateValue(value: any, maxLength: number = 100): any {
+    if (typeof value === 'string' && value.length > maxLength) {
+      return value.substring(0, maxLength) + `... (${value.length} chars total)`;
+    }
+    if (Array.isArray(value)) {
+      return value.map(item => truncateValue(item, maxLength));
+    }
+    if (value !== null && typeof value === 'object') {
+      const truncated: any = {};
+      for (const [key, val] of Object.entries(value)) {
+        truncated[key] = truncateValue(val, maxLength);
+      }
+      return truncated;
+    }
+    return value;
+  }
+
   async function viewFile(fileName: string) {
     try {
       const root = await navigator.storage.getDirectory();
@@ -67,9 +84,15 @@
       // Try to pretty-print JSON
       try {
         const parsed = JSON.parse(text);
-        fileContent = JSON.stringify(parsed, null, 2);
+        const truncated = truncateValue(parsed);
+        fileContent = JSON.stringify(truncated, null, 2);
       } catch {
-        fileContent = text;
+        // For non-JSON files, truncate if too long
+        if (text.length > 100) {
+          fileContent = text.substring(0, 100) + `... (${text.length} chars total)`;
+        } else {
+          fileContent = text;
+        }
       }
     } catch (err) {
       error = err instanceof Error ? err.message : String(err);
@@ -193,6 +216,8 @@
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 2px solid #e0e0e0;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 
   h1 {
@@ -210,6 +235,7 @@
     display: flex;
     gap: 1rem;
     align-items: center;
+    flex-wrap: wrap;
   }
 
   button {
@@ -319,11 +345,13 @@
     flex: 1;
     font-family: 'Monaco', 'Menlo', monospace;
     font-size: 0.9rem;
+    word-break: break-all;
   }
 
   .size {
     color: #666;
     font-size: 0.85rem;
+    white-space: nowrap;
   }
 
   .delete {
@@ -341,6 +369,7 @@
     border-bottom: none;
     font-family: 'Monaco', 'Menlo', monospace;
     font-size: 0.9rem;
+    word-break: break-all;
   }
 
   pre {
@@ -351,6 +380,8 @@
     padding: 1rem;
     overflow: auto;
     max-height: calc(100vh - 350px);
+    word-break: break-all;
+    white-space: pre-wrap;
   }
 
   code {
@@ -364,5 +395,66 @@
     font-style: italic;
     padding: 2rem;
     text-align: center;
+  }
+
+  /* Mobile responsive styles */
+  @media (max-width: 768px) {
+    .debug-container {
+      padding: 1rem;
+    }
+
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+    }
+
+    .actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .content {
+      grid-template-columns: 1fr;
+      height: auto;
+      gap: 1rem;
+    }
+
+    .file-list,
+    .file-viewer {
+      padding: 1rem;
+      max-height: 50vh;
+    }
+
+    .file-item {
+      padding: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .name {
+      font-size: 0.8rem;
+    }
+
+    .size {
+      font-size: 0.75rem;
+    }
+
+    pre {
+      max-height: 40vh;
+      padding: 0.75rem;
+      font-size: 0.75rem;
+    }
+
+    code {
+      font-size: 0.75rem;
+    }
+
+    button {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+    }
   }
 </style>
