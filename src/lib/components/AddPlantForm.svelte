@@ -2,13 +2,15 @@
     import { plantsStore } from "$lib/stores/plants.svelte";
     import { bedsStore } from "$lib/stores/beds.svelte";
     import MultiPhotoInput from "$lib/components/MultiPhotoInput.svelte";
-    import type { Bed } from "$lib/types";
 
     interface Props {
         onClose: () => void;
+        initialBedId?: string;
+        initialRow?: number;
+        initialPosition?: number;
     }
 
-    let { onClose }: Props = $props();
+    let { onClose, initialBedId, initialRow, initialPosition }: Props = $props();
 
     let name = $state("");
     let dominantColour = $state("#ff69b4");
@@ -24,6 +26,27 @@
         bedId?: string;
         location?: string;
     }>({});
+
+    // Initialize with provided values
+    $effect(() => {
+        if (initialBedId) {
+            selectedBedId = initialBedId;
+        } else if (bedsStore.beds.length > 0 && !selectedBedId) {
+            selectedBedId = bedsStore.beds[0].id;
+        }
+    });
+
+    $effect(() => {
+        if (initialRow !== undefined) {
+            selectedRow = initialRow;
+        }
+    });
+
+    $effect(() => {
+        if (initialPosition !== undefined) {
+            selectedPosition = initialPosition;
+        }
+    });
 
     let selectedBed = $derived.by(() => {
         return selectedBedId ? bedsStore.getById(selectedBedId) : null;
@@ -76,7 +99,10 @@
         plantsStore.add({
             name: name.trim(),
             dominantColour,
-            secondaryColour: hasSecondaryColour && secondaryColour ? secondaryColour : undefined,
+            secondaryColour:
+                hasSecondaryColour && secondaryColour
+                    ? secondaryColour
+                    : undefined,
             photos,
             notes: notes.trim() || undefined,
             location: {
@@ -92,12 +118,6 @@
     function handlePhotosChange(newPhotos: string[]) {
         photos = newPhotos;
     }
-
-    $effect(() => {
-        if (bedsStore.beds.length > 0 && !selectedBedId) {
-            selectedBedId = bedsStore.beds[0].id;
-        }
-    });
 </script>
 
 <form onsubmit={handleSubmit}>
@@ -135,15 +155,24 @@
 
     <div class="form-group">
         {#if !hasSecondaryColour}
-            <button type="button" class="btn-add-secondary" onclick={() => { hasSecondaryColour = true; secondaryColour = '#ffffff'; }}>
+            <button
+                type="button"
+                class="btn-add-secondary"
+                onclick={() => {
+                    hasSecondaryColour = true;
+                    secondaryColour = "#ffffff";
+                }}
+            >
                 + Add Secondary Colour
             </button>
         {:else}
-            <label for="secondary-colour">
-                Secondary Colour
-            </label>
+            <label for="secondary-colour"> Secondary Colour </label>
             <div class="colour-input-group">
-                <input type="color" id="secondary-colour" bind:value={secondaryColour} />
+                <input
+                    type="color"
+                    id="secondary-colour"
+                    bind:value={secondaryColour}
+                />
                 <input
                     type="text"
                     bind:value={secondaryColour}
@@ -152,7 +181,14 @@
                 />
             </div>
             <small>Select or enter a secondary colour (hex format)</small>
-            <button type="button" class="btn-remove-secondary" onclick={() => { hasSecondaryColour = false; secondaryColour = ''; }}>
+            <button
+                type="button"
+                class="btn-remove-secondary"
+                onclick={() => {
+                    hasSecondaryColour = false;
+                    secondaryColour = "";
+                }}
+            >
                 Remove Secondary Colour
             </button>
         {/if}

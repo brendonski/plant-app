@@ -30,7 +30,7 @@
 <div class="beds-page">
     <div class="header">
         <div class="header-content">
-            <h1>Garden Beds</h1>
+            <h1>Beds</h1>
             <a href="/plants" class="link-secondary">🌸 View Plants</a>
         </div>
         <button class="btn-primary" onclick={() => (showAddForm = true)}
@@ -60,6 +60,7 @@
                         </p>
                     </div>
                     <div class="bed-actions">
+                        <a href="/beds/{bed.id}" class="btn-view">View Grid</a>
                         <button
                             class="btn-secondary"
                             onclick={() => handleEdit(bed.id)}>Edit</button
@@ -195,6 +196,24 @@
     .bed-actions {
         display: flex;
         gap: 0.5rem;
+    }
+
+    .btn-view {
+        background: #007bff;
+        color: white;
+        flex: 1;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        transition: opacity 0.2s;
+    }
+
+    .btn-view:hover {
+        opacity: 0.8;
     }
 
     button {
