@@ -4,9 +4,26 @@
 	import AddPlantForm from '$lib/components/AddPlantForm.svelte';
 	import EditPlantForm from '$lib/components/EditPlantForm.svelte';
 	import PhotoCarousel from '$lib/components/PhotoCarousel.svelte';
+	import type { Plant } from '$lib/types';
+	import { browser } from '$app/environment';
 
 	let showAddForm = $state(false);
 	let editingPlantId = $state<string | null>(null);
+	
+	// Load saved sort preference from localStorage
+	const SORT_PREFERENCE_KEY = 'plant-list-sort-preference';
+	const savedSort = browser && localStorage.getItem(SORT_PREFERENCE_KEY) as 'name' | 'bed' | 'colour' | null;
+	// Default to 'name' if saved value is invalid or missing
+	let sortBy = $state<'name' | 'bed' | 'colour'>(
+		savedSort && ['name', 'bed', 'colour'].includes(savedSort) ? savedSort : 'name'
+	);
+
+	// Save sort preference whenever it changes
+	$effect(() => {
+		if (browser) {
+			localStorage.setItem(SORT_PREFERENCE_KEY, sortBy);
+		}
+	});
 
 	function handleEdit(plantId: string) {
 		editingPlantId = plantId;
@@ -39,6 +56,40 @@
 	function getLocationString(bedId: string, row: number, position: number): string {
 		return `${getBedName(bedId)}, Row ${getRowLabel(row)}, Position ${position + 1}`;
 	}
+
+	// Get plants list - use a simpler derived to avoid reactivity issues
+	let plants = $derived(plantsStore.plants);
+
+	// Sort the plants based on the selected sort option
+	let sortedPlants = $derived.by(() => {
+		// Create a copy to sort
+		const plantsCopy = plants.slice();
+
+		switch (sortBy) {
+			case 'name':
+				return plantsCopy.sort((a, b) => a.name.localeCompare(b.name));
+			
+			case 'bed':
+				return plantsCopy.sort((a, b) => {
+					const bedA = getBedName(a.location.bedId);
+					const bedB = getBedName(b.location.bedId);
+					const bedCompare = bedA.localeCompare(bedB);
+					if (bedCompare !== 0) return bedCompare;
+					
+					// If same bed, sort by row then position
+					if (a.location.row !== b.location.row) {
+						return a.location.row - b.location.row;
+					}
+					return a.location.position - b.location.position;
+				});
+			
+			case 'colour':
+				return plantsCopy.sort((a, b) => a.dominantColour.localeCompare(b.dominantColour));
+			
+			default:
+				return plantsCopy;
+		}
+	});
 </script>
 
 <div class="plants-page">
@@ -50,19 +101,30 @@
 		<button class="btn-primary" onclick={() => (showAddForm = true)}>+ Add Plant</button>
 	</div>
 
+	{#if plants.length > 0}
+		<div class="controls">
+			<label for="sort-select">Sort by:</label>
+			<select id="sort-select" bind:value={sortBy}>
+				<option value="name">Name</option>
+				<option value="bed">Bed & Position</option>
+				<option value="colour">Colour</option>
+			</select>
+		</div>
+	{/if}
+
 	{#if bedsStore.beds.length === 0}
 		<div class="empty-state">
 			<p>No beds created yet.</p>
 			<p>Please <a href="/beds">create a bed</a> first before adding plants.</p>
 		</div>
-	{:else if plantsStore.plants.length === 0}
+	{:else if plants.length === 0}
 		<div class="empty-state">
 			<p>No plants recorded yet.</p>
 			<p>Click "Add Plant" to record your first plant.</p>
 		</div>
 	{:else}
 		<div class="plants-grid">
-			{#each plantsStore.plants as plant (plant.id)}
+			{#each sortedPlants as plant (plant.id)}
 				<div class="plant-card">
 					{#if plant.photos.length > 0}
 						<div class="plant-photos">
@@ -162,6 +224,41 @@
 	h1 {
 		margin: 0;
 		font-size: 2rem;
+	}
+
+	.controls {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 1.5rem;
+		padding: 1rem;
+		background: #f8f9fa;
+		border-radius: 8px;
+	}
+
+	.controls label {
+		font-weight: 500;
+		color: #333;
+	}
+
+	.controls select {
+		padding: 0.5rem 0.75rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		background: white;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: border-color 0.2s;
+	}
+
+	.controls select:hover {
+		border-color: #007bff;
+	}
+
+	.controls select:focus {
+		outline: none;
+		border-color: #007bff;
+		box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 	}
 
 	.link-secondary {

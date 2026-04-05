@@ -17,11 +17,15 @@ class PlantsStore {
       id: crypto.randomUUID(),
       ...plant,
     };
-    plantsCollection.insert(newPlant);
+    // Ensure data is fully serializable (no proxies or uncloneable objects)
+    const serialized = JSON.parse(JSON.stringify(newPlant));
+    plantsCollection.insert(serialized);
   }
 
   update(id: string, updates: Partial<Omit<Plant, "id">>) {
-    plantsCollection.updateOne({ id }, { $set: updates });
+    // Ensure updates are fully serializable
+    const serialized = JSON.parse(JSON.stringify(updates));
+    plantsCollection.updateOne({ id }, { $set: serialized });
   }
 
   remove(id: string) {
