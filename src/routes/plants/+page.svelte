@@ -63,14 +63,21 @@
 		<div class="plants-grid">
 			{#each plantsStore.plants as plant (plant.id)}
 				<div class="plant-card">
-					{#if plant.photo}
-						<div class="plant-photo">
-							<img src={plant.photo} alt={plant.name} />
+					{#if plant.photos.length > 0}
+						<div class="plant-photos">
+							<div class="main-photo">
+								<img src={plant.photos[0]} alt={plant.name} />
+							</div>
+							{#if plant.photos.length > 1}
+								<div class="photo-count">
+									📷 {plant.photos.length}
+								</div>
+							{/if}
 						</div>
 					{:else}
 						<div class="plant-photo-placeholder">
 							<span>📷</span>
-							<small>No photo</small>
+							<small>No photos</small>
 						</div>
 					{/if}
 
@@ -206,17 +213,35 @@
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
-	.plant-photo {
+	.plant-photos {
+		position: relative;
 		width: 100%;
 		height: 200px;
 		overflow: hidden;
 		background: #f5f5f5;
 	}
 
-	.plant-photo img {
+	.main-photo {
+		width: 100%;
+		height: 100%;
+	}
+
+	.main-photo img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+
+	.photo-count {
+		position: absolute;
+		bottom: 0.5rem;
+		right: 0.5rem;
+		background: rgba(0, 0, 0, 0.7);
+		color: white;
+		padding: 0.25rem 0.75rem;
+		border-radius: 12px;
+		font-size: 0.85rem;
+		font-weight: 500;
 	}
 
 	.plant-photo-placeholder {

@@ -1,8 +1,14 @@
 <script lang="ts">
     import favicon from "$lib/assets/favicon.svg";
     import InstallPrompt from "$lib/components/InstallPrompt.svelte";
+    import { migrateFromLocalStorage } from "$lib/db/migration";
+    import { onMount } from "svelte";
 
     let { children } = $props();
+
+    onMount(() => {
+        migrateFromLocalStorage();
+    });
 </script>
 
 <svelte:head>

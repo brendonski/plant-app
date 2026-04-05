@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { plantsStore } from '$lib/stores/plants.svelte';
 	import { bedsStore } from '$lib/stores/beds.svelte';
-	import PhotoInput from '$lib/components/PhotoInput.svelte';
+	import MultiPhotoInput from '$lib/components/MultiPhotoInput.svelte';
 	import type { Bed } from '$lib/types';
 
 	interface Props {
@@ -12,7 +12,7 @@
 
 	let name = $state('');
 	let dominantColour = $state('#ff69b4');
-	let photo = $state<string | null>(null);
+	let photos = $state<string[]>([]);
 	let selectedBedId = $state<string>('');
 	let selectedRow = $state(0);
 	let selectedPosition = $state(0);
@@ -69,7 +69,7 @@
 		plantsStore.add({
 			name: name.trim(),
 			dominantColour,
-			photo,
+			photos,
 			location: {
 				bedId: selectedBedId,
 				row: selectedRow,
@@ -80,8 +80,8 @@
 		onClose();
 	}
 
-	function handlePhotoChange(photoDataUrl: string | null) {
-		photo = photoDataUrl;
+	function handlePhotosChange(newPhotos: string[]) {
+		photos = newPhotos;
 	}
 
 	$effect(() => {
@@ -125,9 +125,9 @@
 	</div>
 
 	<div class="form-group">
-		<span class="label-text">Photo</span>
-		<PhotoInput value={photo} onPhotoChange={handlePhotoChange} />
-		<small>Upload an existing photo or take a new one</small>
+		<span class="label-text">Photos</span>
+		<MultiPhotoInput {photos} onPhotosChange={handlePhotosChange} />
+		<small>Upload existing photos or take new ones</small>
 	</div>
 
 	<div class="form-group">

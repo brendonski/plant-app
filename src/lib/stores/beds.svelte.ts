@@ -1,9 +1,5 @@
 import type { Bed, IdbBed } from "$lib/types";
-import {
-  bedsCollection,
-  idbBedsCollection,
-  opfsBedsCollection,
-} from "$lib/db/collections";
+import { bedsCollection } from "$lib/db/collections";
 
 class BedsStore {
   get beds(): Bed[] {
@@ -30,20 +26,9 @@ class BedsStore {
     return bedsCollection.findOne({ id });
   }
 
-  migrateToIdb() {
-    console.log("Migrate beds");
-    this.beds.forEach((item, index) => {
-      console.log(item, index);
-      let bedId = item.id;
-      console.log(opfsBedsCollection.find().fetch());
-      if (!opfsBedsCollection.findOne({ id: bedId })) {
-        console.log("Bed", item.id, "not found");
-        let b: IdbBed = {
-          ...item,
-        };
-        opfsBedsCollection.insert(b);
-      }
-    });
+  async migrateFromLocalStorage() {
+    // Migration happens on app startup in +layout.ts
+    // This method is kept for reference but migration logic is elsewhere
   }
 }
 

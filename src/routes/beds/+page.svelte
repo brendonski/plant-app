@@ -25,12 +25,6 @@
         showAddForm = false;
         editingBedId = null;
     }
-
-    $effect(() => {
-        console.log("effect has run");
-        bedsStore.migrateToIdb();
-        plantsStore.migrateToIdb();
-    });
 </script>
 
 <div class="beds-page">

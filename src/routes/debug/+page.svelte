@@ -26,6 +26,7 @@
       const root = await navigator.storage.getDirectory();
       const entries: FileEntry[] = [];
 
+      // @ts-ignore - File System Access API types may not be available
       for await (const entry of root.values()) {
         const fileEntry: FileEntry = {
           name: entry.name,
@@ -98,6 +99,7 @@
 
     try {
       const root = await navigator.storage.getDirectory();
+      // @ts-ignore - File System Access API types may not be available
       for await (const entry of root.values()) {
         await root.removeEntry(entry.name, { recursive: true });
       }

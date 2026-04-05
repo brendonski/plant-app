@@ -37,12 +37,12 @@ function createLocalStoragePersistenceAdapter<T extends { id: string }>(
 }
 
 export const bedsCollection = new Collection<Bed>({
-  persistence: createLocalStoragePersistenceAdapter<Bed>("beds"),
+  persistence: createOPFSAdapter("beds.json"),
   reactivity: svelteReactivityAdapter,
 });
 
 export const plantsCollection = new Collection<Plant>({
-  persistence: createLocalStoragePersistenceAdapter<Plant>("plants"),
+  persistence: createOPFSAdapter("plants.json"),
   reactivity: svelteReactivityAdapter,
 });
 
