@@ -6,6 +6,7 @@
 	import PhotoCarousel from '$lib/components/PhotoCarousel.svelte';
 	import type { Plant } from '$lib/types';
 	import { browser } from '$app/environment';
+	import { compareColorsByHue } from '$lib/utils/colorSort';
 
 	let showAddForm = $state(false);
 	let editingPlantId = $state<string | null>(null);
@@ -84,7 +85,7 @@
 				});
 			
 			case 'colour':
-				return plantsCopy.sort((a, b) => a.dominantColour.localeCompare(b.dominantColour));
+				return plantsCopy.sort((a, b) => compareColorsByHue(a.dominantColour, b.dominantColour));
 			
 			default:
 				return plantsCopy;
