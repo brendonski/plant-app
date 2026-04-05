@@ -48,11 +48,11 @@
 				<strong>Install Garden App</strong>
 				<p>Add to your home screen to keep your plant data safe and access the app quickly.</p>
 				<div class="instructions">
-					Tap <span class="share-icon">
+					Tap the menu <span class="menu-icon">⋯</span>, then Share <span class="share-icon">
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<path d="M12 5v14M5 12l7-7 7 7"/>
 						</svg>
-					</span> then "Add to Home Screen"
+					</span>, then "Add to Home Screen"
 				</div>
 			</div>
 			<button class="dismiss" onclick={dismiss} aria-label="Dismiss">✕</button>
@@ -130,6 +130,19 @@
 		padding: 0.25rem 0.5rem;
 		border-radius: 4px;
 		font-weight: 500;
+	}
+
+	.menu-icon {
+		display: inline-flex;
+		align-items: center;
+		background: white;
+		color: #22c55e;
+		border-radius: 4px;
+		padding: 0.15rem 0.35rem;
+		margin: 0 0.15rem;
+		font-size: 1.2rem;
+		font-weight: bold;
+		line-height: 1;
 	}
 
 	.share-icon {
