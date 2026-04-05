@@ -2,15 +2,17 @@
     import { plantsStore } from "$lib/stores/plants.svelte";
     import { bedsStore } from "$lib/stores/beds.svelte";
     import MultiPhotoInput from "$lib/components/MultiPhotoInput.svelte";
+    import { goto } from "$app/navigation";
 
     interface Props {
         onClose: () => void;
         initialBedId?: string;
         initialRow?: number;
         initialPosition?: number;
+        returnToBedId?: string;
     }
 
-    let { onClose, initialBedId, initialRow, initialPosition }: Props = $props();
+    let { onClose, initialBedId, initialRow, initialPosition, returnToBedId }: Props = $props();
 
     let name = $state("");
     let dominantColour = $state("#ff69b4");
@@ -112,7 +114,19 @@
             },
         });
 
-        onClose();
+        if (returnToBedId) {
+            goto(`/beds/${returnToBedId}`);
+        } else {
+            onClose();
+        }
+    }
+
+    function handleCancel() {
+        if (returnToBedId) {
+            goto(`/beds/${returnToBedId}`);
+        } else {
+            onClose();
+        }
     }
 
     function handlePhotosChange(newPhotos: string[]) {
@@ -260,7 +274,7 @@
     </div>
 
     <div class="form-actions">
-        <button type="button" class="btn-cancel" onclick={onClose}
+        <button type="button" class="btn-cancel" onclick={handleCancel}
             >Cancel</button
         >
         <button type="submit" class="btn-submit">Add Plant</button>

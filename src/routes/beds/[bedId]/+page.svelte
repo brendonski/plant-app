@@ -21,9 +21,9 @@
     function handlePositionClick(row: number, position: number) {
         const plant = getPlantAtPosition(row, position);
         if (plant) {
-            goto(`/plants?edit=${plant.id}`);
+            goto(`/plants?edit=${plant.id}&returnToBed=${bedId}`);
         } else {
-            goto(`/plants?add=true&bed=${bedId}&row=${row}&position=${position}`);
+            goto(`/plants?add=true&bed=${bedId}&row=${row}&position=${position}&returnToBed=${bedId}`);
         }
     }
 </script>

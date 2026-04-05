@@ -15,6 +15,7 @@
     let initialBedId = $state<string | undefined>(undefined);
     let initialRow = $state<number | undefined>(undefined);
     let initialPosition = $state<number | undefined>(undefined);
+    let returnToBedId = $state<string | undefined>(undefined);
 
     // Handle URL parameters
     $effect(() => {
@@ -24,6 +25,11 @@
         const bedParam = params.get("bed");
         const rowParam = params.get("row");
         const positionParam = params.get("position");
+        const returnToBedParam = params.get("returnToBed");
+
+        if (returnToBedParam) {
+            returnToBedId = returnToBedParam;
+        }
 
         if (addParam === "true") {
             initialBedId = bedParam || undefined;
@@ -38,7 +44,13 @@
     });
 
     function clearUrlParams() {
-        goto("/plants", { replaceState: true, keepFocus: true });
+        const params = new URLSearchParams($page.url.searchParams);
+        const returnToBed = params.get("returnToBed");
+        if (returnToBed) {
+            goto(`/plants?returnToBed=${returnToBed}`, { replaceState: true, keepFocus: true });
+        } else {
+            goto("/plants", { replaceState: true, keepFocus: true });
+        }
     }
 
     // Load saved sort preference from localStorage
@@ -265,6 +277,7 @@
                     {initialBedId}
                     {initialRow}
                     {initialPosition}
+                    {returnToBedId}
                 />
             </div>
         </div>
@@ -280,7 +293,7 @@
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div class="modal-content" onclick={(e) => e.stopPropagation()}>
                     <h2>Edit Plant: {plant.name}</h2>
-                    <EditPlantForm {plant} onClose={closeModals} />
+                    <EditPlantForm {plant} onClose={closeModals} {returnToBedId} />
                 </div>
             </div>
         {/if}
